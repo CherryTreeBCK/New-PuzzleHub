@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <link rel="stylesheet" href="CSS/popup1.css">
+  <link rel="stylesheet" href="CSS/popup2.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="puzzles.js"></script>
+  <style>
+    body {
+        margin: 0;
+        overflow: hidden;
+        background-color: #f0f0f0;
+    }
+
+    .container {
+        text-align: center;
+        padding: 20px;
+    }
+
+    .circle {
+        width: 150px;
+        height: 150px;
+        background-color: #3498db;
+        border-radius: 50%;
+        position: absolute;
+        transition: opacity 1s; /* Smooth transition for opacity */
+    }
+
+    #background-canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    </style>
+</head>
+
+<canvas id="background-canvas"></canvas>
+
+<body>
+
+  <div id ="popup" class="popup center">
+    <div class="how-to-play">
+      How to Play 
+    </div>
+    <div class="puzzle-description">
+      At the start of the game, 3 circles appear on the screen. One second later, they completely disappear. Click the locations where the 3 circles previously appeared. The game ends when you miss 3 clicks.
+    </div>
+    <img src="Images/memoryclicker.png" alt="Memory Clicker Image" >
+      <div class="puzzle-btn">
+        <button id="puzzle-popup-btn" onclick="isGamePlaying = true">
+          Start
+        </button>
+    </div>
+  </div>
+
+    
+  <div id="popup2" class="popup2 center">
+    <div class="puzzle-result">
+      Puzzle Complete!
+    </div>
+    <div class="score-description">Total Score (Placeholder text)</div>
+    <div class="puzzle-score-description">Puzzle Score (Placeholder text)</div>
+      <div class="puzzle-btn2">
+        <button id="puzzle-popup-btn2" onclick="nextPuzzle()">
+          Next
+        </button>
+    </div>
+  </div>  
+
+<script>
+
+  var shapeCount = 3;
+  var displayTime = 3000; // Time in seconds for which the circles are displayed
+  var fadeTime = 1000; // Time in seconds for the fade-out animation
+
+  let clickCount = 0;
+  let missCount = 0;
+
+  let timer;
+  var seconds = 0;
+  var score;
+
+  var isGamePlaying = false;
+  var isGameOver = false;
+  var time = 0;
+  var startTime;
+  var maxTime = 10.000;
+
+  document.getElementsByClassName("popup")[0].classList.add("active");
+  document.getElementById("puzzle-popup-btn").addEventListener("click", startGame);
+
+  function startGame(){
+    //Start stopwatch
+    isGamePlaying = true;
+    updateStopwatch();
+    startTime = Date.now();
+
+    //Delete popup
+    document.getElementById("popup").remove();
+
+    function updateStopwatch() {
+    if (isGamePlaying) {
+      const elapsedTime = (Date.now() - startTime) / 1000;
+      time = elapsedTime.toFixed(3);
+      requestAnimationFrame(updateStopwatch);
+    }
+    if(time >= maxTime){
+          isGamePlaying = false;
+          puzzleOver(false, 0);
+      }
+    }
+
+    runGame();
+    }
+
+
+  function runGame(){
+  // Get the canvas element
+  const canvas = document.getElementById("background-canvas");
+  const ctx = canvas.getContext("2d");
+
+  // Set the canvas size to cover the entire window
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  function createCircle() {
+      const circle = document.createElement("div");
+      circle.className = "circle";
+      const maxWidth = window.innerWidth - 150; // Adjust for the circle size
+      const maxHeight = window.innerHeight - 150; // Adjust for the circle size
+
+      const randomX = Math.random() * maxWidth;
+      const randomY = Math.random() * maxHeight;
+
+      circle.style.left = randomX + "px";
+      circle.style.top = randomY + "px";
+
+      document.body.appendChild(circle);
+
+      setTimeout(() => {
+          circle.style.opacity = 0;
+          isGamePlaying = true;
+        updateStopwatch();
+        startTime = Date.now();
+      }, displayTime);
+
+  }
+
+  for (let i = 0; i < shapeCount; i++) {
+          createCircle();
+  }
+
+  function checkGameEnd() {
+    if(!isGameOver){
+      if (shapeCount == clickCount) {
+          console.log("Game won");
+          var score = Math.round((100.000 / maxTime) * -1 * (time - maxTime));
+          puzzleOver(true, score);
+      }
+
+      if (shapeCount - 1 == missCount){
+          console.log("Game lost");
+          isGamePlaying = false;
+          puzzleOver(false, 0);
+
+      }
+
+    }
+  }
+
+  function updateTime() {
+      seconds++;;
+  }
+
+  function startGame() {
+      clickCount = 0;
+      missCount = 0;
+
+      timer = setInterval(updateTime, 1000);
+
+      const circleElements = document.getElementsByClassName("circle");
+
+      for (const circle of circleElements) {
+          circle.addEventListener("click", () => {
+              circle.style.opacity = 1;
+              clickCount++;
+              checkGameEnd();
+          });
+      }
+
+      canvas.addEventListener("click", (event) => {
+      if (event.target === canvas) {
+          checkGameEnd()
+
+          missCount++;
+      }
+  });
+  }
+
+  function updateStopwatch() {
+  if (isGamePlaying) {
+    const elapsedTime = (Date.now() - startTime) / 1000;
+    time = elapsedTime.toFixed(3);
+
+    if (time >= maxTime) {
+      isGamePlaying = false;
+      isGameOver = true;
+      puzzleOver(false, 0);
+    }
+
+    requestAnimationFrame(updateStopwatch);
+  }
+}
+
+
+setTimeout(startGame, 4000);
+
+}
+    
+</script>
+
+<script src="puzzles.js"></script>
+
+</body>
+</html>

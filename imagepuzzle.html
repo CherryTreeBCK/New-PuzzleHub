@@ -1,0 +1,466 @@
+<html lang="en">
+  <head>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta charset="utf-8">
+  <title> Puzzle Hub Puzzles </title>
+  <link rel="stylesheet" href="CSS/popup1.css">
+  <link rel="stylesheet" href="CSS/popup2.css">
+  <!-- Google Fonts ====================================================== -->
+  <link href="//fonts.googleapis.com/css?family=Open+Sans:400,700,400italic,700italic|Fira+Sans:400,700,400italic,700italic" rel="stylesheet" type="text/css">
+  <!-- Kajabi CSS ======================================================== -->
+  <link rel="stylesheet" media="screen" href="https://kajabi-app-assets.kajabi-cdn.com/assets/core-39d7ec8c864adbae305102afb66be7486f2dfa14daf2042501bc27b46117fc72.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+  <link rel="stylesheet" media="screen" href="https://kajabi-storefronts-production.kajabi-cdn.com/kajabi-storefronts-production/themes/3223526/assets/styles.css?1668109292756754">
+  <!-- Customer CSS ====================================================== -->
+  <link rel="stylesheet" media="screen" href="https://kajabi-storefronts-production.kajabi-cdn.com/kajabi-storefronts-production/themes/3223526/assets/overrides.css?1668109292756754">
+
+  <style>
+
+    
+
+  body {
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  #container {
+    position: relative;
+  }
+
+  #canvas {
+    border: 1px solid black;
+  }
+    
+  </style>
+</head>
+<body>
+  <div id="container">
+    <canvas id="canvas"></canvas>
+  </div>
+  <div id ="popup" class="popup center">
+    <div class="how-to-play">
+      How to Play 
+    </div>
+    <div class="puzzle-description">
+      When the puzzle begins, you have 10 seconds to memorize the image that appears. It will then break into several pieces. Drag the various puzzle pieces and rebuild the image in the shortest time possible to complete the puzzle.
+    </div>
+    <img src="Images/imagepuzzle.png" alt="Image Puzzle Image">
+      <div class="puzzle-btn">
+        <button id="puzzle-popup-btn" onclick="isGamePlaying = true">
+          Start
+        </button>
+      </div>
+  </div>
+    
+  <div id="popup2" class="popup2 center">
+    <div class="puzzle-result">
+      Puzzle Complete!
+    </div>
+    <div class="score-description">Total Score (Placeholder text)</div>
+    <div class="puzzle-score-description">Puzzle Score (Placeholder text)</div>
+      <div class="puzzle-btn2">
+        <button id="puzzle-popup-btn2" onclick="nextPuzzle()">
+          Next
+        </button>
+      </div>
+  </div>  
+
+  <script src="imagedatabase.js"></script>
+
+<script>
+
+document.getElementsByClassName("popup")[0].classList.add("active");
+document.getElementById("puzzle-popup-btn").addEventListener("click", startGame);
+
+const PUZZLE_HOVER_TINT = "#009900";
+const img = new Image();
+const canvas = document.querySelector("#canvas");
+const stage = canvas.getContext("2d");
+let difficulty = 4;
+let pieces;
+let puzzleWidth;
+let puzzleHeight;
+let pieceWidth;
+let pieceHeight;
+let currentPiece;
+let currentDropPiece;
+let mouse;
+var isGamePlaying = false;
+var time = 0;
+var startTime;
+var maxTime = 240.000;
+var puzzleShuffled = false;
+
+
+let countdown = 10;
+
+function startGame(){
+
+//Start stopwatch
+isGamePlaying = true;
+updateStopwatch();
+startTime = Date.now();
+
+//Delete popup
+document.getElementById("popup").remove();
+
+function updateStopwatch() {
+if (isGamePlaying) {
+  const elapsedTime = (Date.now() - startTime) / 1000;
+  time = elapsedTime.toFixed(3);
+  requestAnimationFrame(updateStopwatch);
+}
+if(time >= maxTime){
+      isGamePlaying = false;
+      puzzleOver(false, 0);
+  }
+}
+
+runGame();
+}
+
+function runGame(){
+
+  function startCountdown() {
+    if(!puzzleShuffled){
+    if (countdown > 0) {
+        console.log(countdown);
+        countdown--;
+        setTimeout(startCountdown, 1000);
+    } else {
+        shufflePuzzle();
+        console.log("Shuffle Puzzle");
+    }
+  }
+}
+
+startCountdown();
+  function getRandomElement(array) {
+      return array[Math.floor(Math.random() * array.length)];
+  }
+
+  const randomImageUrl = getRandomElement(imageList);
+
+  img.addEventListener("load", onImage, false);
+  img.src = randomImageUrl;
+
+  function initPuzzle() {
+    pieces = [];
+    mouse = {
+      x: 0,
+      y: 0
+    };
+    currentPiece = null;
+    currentDropPiece = null;
+    stage.drawImage(
+      img,
+      0,
+      0,
+      puzzleWidth,
+      puzzleHeight,
+      0,
+      0,
+      puzzleWidth,
+      puzzleHeight
+    );
+    buildPieces();
+  }
+
+  function setCanvas() {
+    canvas.width = puzzleWidth;
+    canvas.height = puzzleHeight;
+    canvas.style.border = "1px solid black";
+  }
+
+  function onImage() {
+    pieceWidth = Math.floor(img.width / difficulty);
+    pieceHeight = Math.floor(img.height / difficulty);
+    puzzleWidth = pieceWidth * difficulty;
+    puzzleHeight = pieceHeight * difficulty;
+    setCanvas();
+    initPuzzle();
+  }
+
+  function createTitle(msg) {
+    stage.fillStyle = "#000000";
+    stage.globalAlpha = 0.4;
+    stage.fillRect(100, puzzleHeight - 40, puzzleWidth - 200, 40);
+    stage.fillStyle = "#FFFFFF";
+    stage.globalAlpha = 1;
+    stage.textAlign = "center";
+    stage.textBaseline = "middle";
+    stage.font = "20px Arial";
+    stage.fillText(msg, puzzleWidth / 2, puzzleHeight - 20);
+  }
+
+  function buildPieces() {
+    let i;
+    let piece;
+    let xPos = 0;
+    let yPos = 0;
+    for (i = 0; i < difficulty * difficulty; i++) {
+      piece = {};
+      piece.sx = xPos;
+      piece.sy = yPos;
+      pieces.push(piece);
+      xPos += pieceWidth;
+      if (xPos >= puzzleWidth) {
+        xPos = 0;
+        yPos += pieceHeight;
+      }
+    }
+      document.onpointerdown = shufflePuzzle;
+      puzzleShuffled = true;
+  }
+ 
+  function shufflePuzzle() {
+    pieces = shuffleArray(pieces);
+    stage.clearRect(0, 0, puzzleWidth, puzzleHeight);
+    let xPos = 0;
+    let yPos = 0;
+    for (const piece of pieces) {
+      piece.xPos = xPos;
+      piece.yPos = yPos;
+      stage.drawImage(
+        img,
+        piece.sx,
+        piece.sy,
+        pieceWidth,
+        pieceHeight,
+        xPos,
+        yPos,
+        pieceWidth,
+        pieceHeight
+      );
+      stage.strokeRect(xPos, yPos, pieceWidth, pieceHeight);
+      xPos += pieceWidth;
+      if (xPos >= puzzleWidth) {
+        xPos = 0;
+        yPos += pieceHeight;
+      }
+    }
+      document.onpointerdown = onPuzzleClick;
+
+  }
+  function checkPieceClicked() {
+    for (const piece of pieces) {
+      if (
+        mouse.x < piece.xPos ||
+        mouse.x > piece.xPos + pieceWidth ||
+        mouse.y < piece.yPos ||
+        mouse.y > piece.yPos + pieceHeight
+      ) {
+        //PIECE NOT HIT
+      } else {
+        return piece;
+      }
+    }
+    return null;
+  }
+
+  function updatePuzzle(e) {
+    currentDropPiece = null;
+    if (e.layerX || e.layerX == 0) {
+      mouse.x = e.layerX - canvas.offsetLeft;
+      mouse.y = e.layerY - canvas.offsetTop;
+    } else if (e.offsetX || e.offsetX == 0) {
+      mouse.x = e.offsetX - canvas.offsetLeft;
+      mouse.y = e.offsetY - canvas.offsetTop;
+    }
+    stage.clearRect(0, 0, puzzleWidth, puzzleHeight);
+    for (const piece of pieces) {
+      if (piece == currentPiece) {
+        continue;
+      }
+      stage.drawImage(
+        img,
+        piece.sx,
+        piece.sy,
+        pieceWidth,
+        pieceHeight,
+        piece.xPos,
+        piece.yPos,
+        pieceWidth,
+        pieceHeight
+      );
+      stage.strokeRect(piece.xPos, piece.yPos, pieceWidth, pieceHeight);
+      if (currentDropPiece == null) {
+        if (
+          mouse.x < piece.xPos ||
+          mouse.x > piece.xPos + pieceWidth ||
+          mouse.y < piece.yPos ||
+          mouse.y > piece.yPos + pieceHeight
+        ) {
+          //NOT OVER
+        } else {
+          currentDropPiece = piece;
+          stage.save();
+          stage.globalAlpha = 0.4;
+          stage.fillStyle = PUZZLE_HOVER_TINT;
+          stage.fillRect(
+            currentDropPiece.xPos,
+            currentDropPiece.yPos,
+            pieceWidth,
+            pieceHeight
+          );
+          stage.restore();
+        }
+      }
+    }
+    stage.save();
+    stage.globalAlpha = 0.6;
+    stage.drawImage(
+      img,
+      currentPiece.sx,
+      currentPiece.sy,
+      pieceWidth,
+      pieceHeight,
+      mouse.x - pieceWidth / 2,
+      mouse.y - pieceHeight / 2,
+      pieceWidth,
+      pieceHeight
+    );
+    stage.restore();
+    stage.strokeRect(
+      mouse.x - pieceWidth / 2,
+      mouse.y - pieceHeight / 2,
+      pieceWidth,
+      pieceHeight
+    );
+  }
+
+  function onPuzzleClick(e) {
+    if (e.layerX || e.layerX === 0) {
+      mouse.x = e.layerX - canvas.offsetLeft;
+      mouse.y = e.layerY - canvas.offsetTop;
+    } else if (e.offsetX || e.offsetX === 0) {
+      mouse.x = e.offsetX - canvas.offsetLeft;
+      mouse.y = e.offsetY - canvas.offsetTop;
+    }
+    currentPiece = checkPieceClicked();
+    if (currentPiece !== null) {
+      stage.clearRect(
+        currentPiece.xPos,
+        currentPiece.yPos,
+        pieceWidth,
+        pieceHeight
+      );
+      stage.save();
+      stage.globalAlpha = 0.9;
+      stage.drawImage(
+        img,
+        currentPiece.sx,
+        currentPiece.sy,
+        pieceWidth,
+        pieceHeight,
+        mouse.x - pieceWidth / 2,
+        mouse.y - pieceHeight / 2,
+        pieceWidth,
+        pieceHeight
+      );
+      stage.restore();
+      document.onpointermove = updatePuzzle;
+      document.onpointerup = pieceDropped;
+    }
+  }
+
+  function gameOver() {
+    document.onpointerdown = null;
+    document.onpointermove = null;
+    document.onpointerup = null;
+    initPuzzle();
+  }
+
+  function pieceDropped(e) {
+    document.onpointermove = null;
+    document.onpointerup = null;
+    if (currentDropPiece !== null) {
+      let tmp = {
+        xPos: currentPiece.xPos,
+        yPos: currentPiece.yPos
+      };
+      currentPiece.xPos = currentDropPiece.xPos;
+      currentPiece.yPos = currentDropPiece.yPos;
+      currentDropPiece.xPos = tmp.xPos;
+      currentDropPiece.yPos = tmp.yPos;
+    }
+    resetPuzzleAndCheckWin();
+  }
+
+  function resetPuzzleAndCheckWin() {
+    stage.clearRect(0, 0, puzzleWidth, puzzleHeight);
+    let gameWin = true;
+    for (piece of pieces) {
+      stage.drawImage(
+        img,
+        piece.sx,
+        piece.sy,
+        pieceWidth,
+        pieceHeight,
+        piece.xPos,
+        piece.yPos,
+        pieceWidth,
+        pieceHeight
+      );
+      stage.strokeRect(piece.xPos, piece.yPos, pieceWidth, pieceHeight);
+      if (piece.xPos != piece.sx || piece.yPos != piece.sy) {
+        gameWin = false;
+      }
+    }
+    if (gameWin) {
+      setTimeout(gameOver, 500);
+      var score = Math.round((100.000 / maxTime) * -1 * (time - maxTime));
+      puzzleOver(true, score);
+    }
+    else{
+
+      if(time >= maxTime){
+        puzzleOver(false, 0);
+      }
+    }
+
+
+  }
+
+  function shuffleArray(o) {
+    for (
+      var j, x, i = o.length;
+      i;
+      j = parseInt(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x
+    );
+    return o;
+  }
+
+  function updateDifficulty(e) {
+    difficulty = e.target.value;
+    pieceWidth = Math.floor(img.width / difficulty);
+    pieceHeight = Math.floor(img.height / difficulty);
+    puzzleWidth = pieceWidth * difficulty;
+    puzzleHeight = pieceHeight * difficulty;
+    gameOver();
+  }
+}
+
+
+
+</script>
+
+<script charset="ISO-8859-1" src="https://fast.wistia.com/assets/external/E-v1.js"></script>
+<style id="wistia_22_style" type="text/css" class="wistia_injected_style">
+  @font-face {
+    font-family: 'WistiaPlayerInterNumbersSemiBold';
+    font-feature-settings: 'tnum'1;
+    src: url(data:application/x-font-woff;charset=utf-8;base64,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);
+  }
+  
+</style>
+<script charset="ISO-8859-1" src="https://fast.wistia.com/labs/crop-fill/plugin.js"></script>
+<script src="https://kajabi-app-assets.kajabi-cdn.com/assets/encore_core-d18fb77ad962d2dfbc9c227290ae6c402da0371e2b851bf083a311a1a3962c2c.js"></script>
+<script src="https://kajabi-storefronts-production.kajabi-cdn.com/kajabi-storefronts-production/themes/3223526/assets/scripts.js?1668109292756754"></script>
+
+<script src="puzzles.js"></script>
+

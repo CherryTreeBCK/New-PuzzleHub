@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="stylesheet" href="CSS/popup1.css">
+  <link rel="stylesheet" href="CSS/popup2.css">
+
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
+    canvas {
+      display: block;
+    }
+  </style>
+
+<div id ="popup" class="popup center">
+  <div class="how-to-play">
+    How to Play 
+  </div>
+  <div class="puzzle-description">
+    A series of raindrops fall from the sky. Click the bottom of each drop to prevent it from reaching the ground. The raindrops’ speed increases each time you catch one. Try to last as long as possible without a raindrop hitting the ground.
+    
+  </div>
+  <img src="Images/raindrop.png" alt="Raindrop Image" >
+    <div class="puzzle-btn">
+      <button id="puzzle-popup-btn">
+        Start
+      </button>
+  </div>
+</div>
+
+<div id="popup2" class="popup2 center">
+  <div class="puzzle-result">
+    Puzzle Complete!
+  </div>
+  <div class="score-description">Total Score (Placeholder text)</div>
+  <div class="puzzle-score-description">Puzzle Score (Placeholder text)</div>
+
+    <div class="puzzle-btn2">
+      <button id="puzzle-popup-btn2" onclick="nextPuzzle()">
+        Next
+      </button>
+    </div>
+</div>  
+
+
+
+</head>
+<body>
+<script>
+
+    document.getElementsByClassName("popup")[0].classList.add("active");
+    document.getElementById("puzzle-popup-btn").addEventListener("click", startGame);
+
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    document.body.appendChild(canvas);
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const Drops = [];
+    
+    let speed = 2;
+    var minSpeed = 1;
+    var maxSpeed = 2;
+    
+    var isGamePlaying = false;
+    var isGameOver = false;
+    var time = 0;
+    var startTime;
+    var maxTime = 20.000; //+1 second because the first drop drops at 1 second
+    var dropsPerSecond = 1;
+
+    let dropsCaught = 0;
+    var maxDrops = 20;
+    var score = 0;
+
+    function startGame(){
+
+      //Start stopwatch
+      isGamePlaying = true;
+      updateStopwatch();
+      startTime = Date.now();
+
+      //Delete popup
+      document.getElementById("popup").remove();
+
+      function updateStopwatch() {
+        if (isGamePlaying) {
+          const elapsedTime = (Date.now() - startTime) / 1000;
+          time = elapsedTime.toFixed(3);
+          requestAnimationFrame(updateStopwatch);
+        }
+        if(time > maxTime){
+          if(isGamePlaying == true){
+              isGamePlaying = false;
+              puzzleOver(true, score);
+          }
+        }
+      }
+      runGame();
+    }
+
+
+    function runGame(){
+
+    function createDrop() {
+        const radius = 30;
+        const x = Math.random() * (canvas.width - 2 * radius) + radius;
+        const y = 0;
+        const color = getRandomColor();
+        const dropSpeed = getRandomSpeed();
+        const Drop = { x, y, radius, color, speed: dropSpeed };
+        Drops.push(Drop);
+    }
+
+    function getRandomColor() {
+      const letters = "0123456789ABCDEF";
+      let color = "#";
+      for (let i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+      }
+      return color;
+    }
+
+    function getRandomSpeed() {
+      return Math.random() * (maxSpeed - minSpeed) + minSpeed;
+    }
+
+    function drawDrop(Drop) {
+      ctx.beginPath();
+      ctx.arc(Drop.x, Drop.y, Drop.radius, 0, Math.PI * 2);
+      ctx.fillStyle = Drop.color;
+      ctx.fill();
+      ctx.closePath();
+    }
+
+    
+    function update() {
+
+      score = Math.round((dropsCaught / maxDrops) * 100);
+
+      for (const Drop of Drops) {
+        Drop.y += Drop.speed;
+        drawDrop(Drop);
+      }
+
+      Drops.forEach((Drop, index) => {
+
+        
+          if (Drop.y - Drop.radius > canvas.height) {
+            if(isGamePlaying){
+            puzzleOver(true, score);
+            isGamePlaying = false;
+            Drops.splice(index, 1);
+          }
+        }
+});
+
+      requestAnimationFrame(update);
+    }
+
+    function clickHandler(event) {
+      const mouseX = event.clientX;
+      const mouseY = event.clientY;
+
+      for (const Drop of Drops) {
+        const distance = Math.sqrt((mouseX - Drop.x) ** 2 + (mouseY - Drop.y) ** 2);
+
+        if (distance < Drop.radius) {
+          Drops.splice(Drops.indexOf(Drop), 1);
+          dropsCaught++;
+          maxSpeed += 0.5;
+        }
+      }
+    }
+
+    if(dropsCaught <= maxDrops){
+      setInterval(createDrop, 1000 / dropsPerSecond);
+    }
+    
+
+    if(!isGameOver){
+      canvas.addEventListener("click", clickHandler);
+      update();
+    }
+
+  }
+    
+  </script>
+
+<script src="puzzles.js"></script>
+
+
+</body>
+</html>

@@ -1,0 +1,103 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <link rel="stylesheet" href="CSS/popup1.css">
+  <link rel="stylesheet" href="CSS/popup2.css">
+  
+
+<style>
+      h1 {
+ text-align: center;
+}
+
+#game-board {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  transform: translateY(30%);
+}
+
+.letter-box {
+  border: 3px solid gray;
+  border-radius: 4px;
+  margin: 3px;
+  font-size: 6rem;
+  font-weight: 700;
+  height: 8rem;
+  width: 8rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-transform: uppercase;
+}
+
+.filled-box {
+  border: 2px solid black;
+}
+
+.letter-row {
+  display: flex;
+}
+
+.second-row {
+  margin: 1rem 0;
+}
+ 
+</style>
+
+<script>
+  
+</script>
+
+</head>
+<body>
+
+  <div id ="popup" class="popup center">
+    <div class="how-to-play">
+      How to Play 
+    </div>
+    <div class="puzzle-description">
+      Try to guess a 5-letter word. After you guess a word, each letter you type will turn into a tile. If the letter's tile is <strong>green</strong>, it is in the word but not in the right spot. If a tile is <strong>yellow</strong>, it is in the word but in the wrong spot. If the letter's tile is <strong>gray</strong>, it is not in the word.
+    </div>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/2/2c/Rotating_earth_%28large%29.gif" alt="Shnoof" >
+      <div class="puzzle-btn">
+        <button id="puzzle-popup-btn">
+          Start
+        </button>
+    </div>
+  </div>
+
+
+  <div id="popup2" class="popup2 center">
+    <div class="puzzle-result">
+      Puzzle Complete!
+    </div>
+    <div class="score-description">Total Score (Placeholder text)</div>
+    <div class="puzzle-score-description">Puzzle Score (Placeholder text)</div>
+  
+      <div class="puzzle-btn2">
+        <button id="puzzle-popup-btn2" onclick="nextPuzzle()">
+          Next
+        </button>
+      </div>
+  </div>  
+
+    <div id="game-board"></div>
+
+<script
+
+src="https://code.jquery.com/jquery-3.6.0.min.js"
+integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+<script src="wordle.js" type="module"></script>
+</body>
+</html>
+
+<script src="puzzles.js"></script>
+
+
+

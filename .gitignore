@@ -1,0 +1,12 @@
+.vscode
+.VSCodeCounter
+Archive
+Dark Mode Saves
+node_modules
+src
+Testing
+.hintrc
+todo.txt
+package-lock.json
+package.json
+tailwind.config.js

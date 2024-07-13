@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <link rel="stylesheet" href="CSS/popup1.css">
+  <link rel="stylesheet" href="CSS/popup2.css">
+  <!-- Google Fonts ====================================================== -->
+  <link href="//fonts.googleapis.com/css?family=Open+Sans:400,700,400italic,700italic|Fira+Sans:400,700,400italic,700italic" rel="stylesheet" type="text/css">
+  <!-- Kajabi CSS ======================================================== -->
+  <link rel="stylesheet" media="screen" href="https://kajabi-app-assets.kajabi-cdn.com/assets/core-39d7ec8c864adbae305102afb66be7486f2dfa14daf2042501bc27b46117fc72.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+  <link rel="stylesheet" media="screen" href="https://kajabi-storefronts-production.kajabi-cdn.com/kajabi-storefronts-production/themes/3223526/assets/styles.css?1668109292756754">
+  <!-- Customer CSS ====================================================== -->
+  <link rel="stylesheet" media="screen" href="https://kajabi-storefronts-production.kajabi-cdn.com/kajabi-storefronts-production/themes/3223526/assets/overrides.css?1668109292756754">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    #game-container {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      background-color: #FFFFFF;
+    }
+
+    .ball {
+      position: absolute;
+      border-radius: 50%;
+    }
+
+    #info {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-family: Arial, sans-serif;
+      font-size: 16px;
+      color: #000000;
+      z-index: 9999;
+    }
+  </style>
+
+</head>
+
+<body>
+  <div id="game-container"></div>
+  <div id="info"> </div>
+
+  <div id="popup" class="popup center">
+    <div class="how-to-play">
+      <strong>How to Play</strong>
+    </div>
+    <div class="puzzle-description">
+      The object of the game is to click as many highlighted bouncy balls as possible before time runs out. After each successful click, you’ll have 1 second to click the next highlighted ball. With each successful click, the speed of the balls increases. The puzzle ends when more than a second passes without a ball being clicked, or the time limit is reached.
+    </div>
+    <img src="Images/bounce.png" alt="Bounce image">  
+      <div class="puzzle-btn">
+        <button id="puzzle-popup-btn">
+          Start
+        </button>
+      </div>
+  </div>
+
+
+  <div id="popup2" class="popup2 center">
+    <div class="puzzle-result">
+      Puzzle Complete!
+    </div>
+    <div class="score-description">Total Score (Placeholder text)</div>
+    <div class="puzzle-score-description">Puzzle Score (Placeholder text)</div>
+      <div class="puzzle-btn2">
+        <button id="puzzle-popup-btn2" onclick="nextPuzzle()">
+          Next
+        </button>
+      </div>
+  </div>
+  </html>
+
+  <script>
+    document.getElementsByClassName("popup")[0].classList.add("active");
+    document.getElementById("puzzle-popup-btn").addEventListener("click", startGame);
+
+    var time = 0;
+    var isGamePlaying = false;
+    var maxTime = 20.000;
+    var maxClickTime = 1.0;
+    var startTime;
+    var countdownStartTime;
+
+    var ballCount = 3;
+    var minSpeed = 5;
+    var maxSpeed = 5;
+    var ballRadius = 50;
+    var ballsTouched = 0;
+
+    var score = 0;
+
+    // Array to store ball elements and their opacity state
+    var balls = [];
+    var lastClickedBall = null;
+
+    // Game container
+    var container = document.getElementById("game-container");
+    var containerWidth = container.offsetWidth;
+    var containerHeight = container.offsetHeight;
+
+    function startGame() {
+      isGamePlaying = true;
+      // Delete popup
+      document.getElementById("popup").remove();
+
+      runGame();
+    }
+
+    function runGame() {
+      //Start countdown
+      updateCountdown();
+      countdownStartTime = Date.now();
+
+      // Create balls and set initial opacity state
+      for (var i = 0; i < ballCount; i++) {
+        var ball = document.createElement("div");
+        ball.className = "ball";
+        ball.style.width = ball.style.height = ballRadius * 2 + "px";
+        ball.style.backgroundColor = randomRainbowColor();
+        ball.style.left = getRandomNumber(0, containerWidth - ballRadius * 2) + "px";
+        ball.style.top = getRandomNumber(0, containerHeight - ballRadius * 2) + "px";
+
+        var angle = getRandomNumber(20, 70) * (Math.random() > 0.5 ? 1 : -1); // Random angle between 20 and 70 degrees
+        var speed = getRandomNumber(2, maxSpeed);
+        var xSpeed = Math.cos(angle * (Math.PI / 180)) * speed;
+        var ySpeed = -Math.sin(angle * (Math.PI / 180)) * speed;
+
+        balls.push({
+          element: ball,
+          xSpeed: xSpeed,
+          ySpeed: ySpeed,
+          clicked: false,
+        });
+
+        container.appendChild(ball);
+      }
+
+      // Set initial opacity state
+      for (let i = 0; i < balls.length; i++) {
+        if (i !== 0) {
+          balls[i].element.style.opacity = 0.1;
+        }
+      }
+
+      // Update ball positions
+      function update() {
+        balls.forEach(function (ball) {
+
+          var ballElement = ball.element;
+          var ballX = parseInt(ballElement.style.left, 10);
+          var ballY = parseInt(ballElement.style.top, 10);
+
+          // Bounce off walls
+          if (ballX <= 0 || ballX >= containerWidth - ballRadius * 2) {
+            ball.xSpeed = -ball.xSpeed;
+          }
+          if (ballY <= 0 || ballY >= containerHeight - ballRadius * 2) {
+            ball.ySpeed = -ball.ySpeed;
+          }
+
+          // Update position
+          ballX += ball.xSpeed;
+          ballY += ball.ySpeed;
+          ballElement.style.left = ballX + "px";
+          ballElement.style.top = ballY + "px";
+        });
+
+        requestAnimationFrame(update);
+      }
+      update();
+      
+    function updateCountdown() {
+      if (isGamePlaying) {
+        const elapsedTime = (Date.now() - countdownStartTime) / 1000;
+        time = (maxClickTime - elapsedTime).toFixed(3);
+        requestAnimationFrame(updateCountdown);
+      }
+
+      if(time <= 0){
+        if(isGamePlaying){
+          puzzleOver(true, score);
+          isGamePlaying = false;
+        }
+      }
+    }
+
+  function updateStopwatch() {
+    if (isGamePlaying) {
+      const elapsedTime = (Date.now() - startTime) / 1000;
+      time = elapsedTime.toFixed(3);
+      requestAnimationFrame(updateStopwatch);
+    }
+    if(time >= maxTime){
+          isGamePlaying = false;
+          puzzleOver(true, score);
+      }
+
+      score = Math.round((time / maxTime) * 100);
+  }
+
+  var firstBall = true;
+
+// Handle ball click
+container.addEventListener("mousedown", function (event) {
+  balls.forEach(function (ball, index) {
+    
+    // Skip this ball if it has been clicked already
+    if (ball.clicked) {
+      return;
+    }
+
+    if(firstBall){
+      startTime = Date.now();
+      updateStopwatch();
+      firstBall = false;
+    }
+
+    var ballElement = ball.element;
+    var ballX = parseInt(ballElement.style.left, 10);
+    var ballY = parseInt(ballElement.style.top, 10);
+
+    var distance = Math.sqrt(
+      Math.pow(event.clientX - (ballX + ballRadius), 2) +
+      Math.pow(event.clientY - (ballY + ballRadius), 2)
+    );
+    if (distance <= ballRadius) {
+      ballElement.style.opacity = 0.1;
+
+      ballsTouched += 1;
+      maxSpeed++;
+
+      var angle = Math.abs(getRandomNumber(0, 360) * (Math.random() > 0.5 ? 1 : -1));
+      var speed = getRandomNumber(minSpeed, maxSpeed);
+      ball.xSpeed = Math.cos(angle * (Math.PI / 180)) * speed;
+      ball.ySpeed = -Math.sin(angle * (Math.PI / 180)) * speed;
+
+      // Mark this ball as clicked
+      ball.clicked = true;
+
+      countdownStartTime = Date.now();
+      updateCountdown();
+
+      // If there was a last clicked ball, add it back to the unclicked balls
+      if (lastClickedBall) {
+        lastClickedBall.clicked = false;
+      }
+
+      // Update the last clicked ball
+      lastClickedBall = ball;
+
+      // Find a random ball that hasn't been clicked and set its opacity to 1
+      var unclickedBalls = balls.filter((b) => !b.clicked);
+
+      if (unclickedBalls.length > 0) {
+        var randomBall = unclickedBalls[Math.floor(Math.random() * unclickedBalls.length)];
+        randomBall.element.style.opacity = 1;
+      }
+    }
+  });
+});
+
+      // Helper functions
+      function getRandomNumber(min, max) {
+        return Math.floor(Math.random() * (max - min + 1) + min);
+      }
+
+      function randomRainbowColor() {
+        var colors = ["blue", "deepskyblue", "dodgerblue", "darkturquoise", "aqua", "cornflowerblue", "darkblue" , "lightskyblue", "mediumblue", "navy", "royalblue", "skyblue", "steelblue", "slateblue"];
+        var randomIndex = Math.floor(Math.random() * colors.length);
+        return colors[randomIndex];
+      }
+
+    }
+  </script>
+</body>
+
+</html>
+
+
+
+<script src="puzzles.js"></script>
+
+
+
+
+
+<script charset="ISO-8859-1" src="https://fast.wistia.com/assets/external/E-v1.js"></script>
+<style id="wistia_22_style" type="text/css" class="wistia_injected_style">
+  @font-face {
+    font-family: 'WistiaPlayerInterNumbersSemiBold';
+    font-feature-settings: 'tnum'1;
+    src: url(data:application/x-font-woff;charset=utf-8;base64,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);
+  }
+  
+</style>
+<script charset="ISO-8859-1" src="https://fast.wistia.com/labs/crop-fill/plugin.js"></script>
+<script src="https://kajabi-app-assets.kajabi-cdn.com/assets/encore_core-d18fb77ad962d2dfbc9c227290ae6c402da0371e2b851bf083a311a1a3962c2c.js"></script>
+<script src="https://kajabi-storefronts-production.kajabi-cdn.com/kajabi-storefronts-production/themes/3223526/assets/scripts.js?1668109292756754"></script>
+    
+  </body>
+</html>
