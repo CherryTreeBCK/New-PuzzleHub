@@ -23,7 +23,7 @@ var reactionTime = ['bounce', 'raindrop', 'hoop', 'memoryclicker']
 var coordinationScore = 0;
 var memoryScore = 0;
 var problemSolvingScore = 0;
-var reactionTimeScore = 5;
+var reactionTimeScore = 0;
 
 function calculateStats(){
   coordinationScore = (puzzleScores[coordination[0]] + puzzleScores[coordination[1]] + puzzleScores[coordination[2]]) / coordination.length;
@@ -31,8 +31,6 @@ function calculateStats(){
   problemSolvingScore = (puzzleScores[problemSolving[0]] + puzzleScores[problemSolving[1]] + puzzleScores[problemSolving[2]] + puzzleScores[problemSolving[3]]) / problemSolving.length;
   reactionTimeScore = (puzzleScores[reactionTime[0]] + puzzleScores[reactionTime[1]] + puzzleScores[reactionTime[2]] + puzzleScores[reactionTime[3]]) / reactionTime.length;
 }
-
-calculateStats();
 
 function nextPuzzle() {
   if (puzzles.length === 0) {
