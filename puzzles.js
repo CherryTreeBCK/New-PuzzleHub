@@ -13,6 +13,8 @@ var puzzleScores = JSON.parse(sessionStorage.getItem("puzzleScores")) || {
   "hoop": 0
 };
 
+var oldPuzzleScores = null;
+
 var coordination = ['bounce', 'maze', 'hoop']
 var memory = ['memoryclicker', 'imagepuzzle']
 var problemSolving = ['wordle', 'maze', 'sudoku', 'imagepuzzle']
@@ -55,6 +57,8 @@ function nextPuzzle() {
 }
 
 function puzzleOver(result, newScore) {
+  sessionStorage.setItem("puzzleScores", JSON.stringify(puzzleScores));
+
   if(result == false){
     newScore = newScore / 2;
   }
