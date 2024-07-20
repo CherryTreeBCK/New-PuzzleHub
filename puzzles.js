@@ -1,6 +1,6 @@
 var totalScore = sessionStorage.getItem('totalScore') ? parseInt(sessionStorage.getItem('totalScore')) : 0;
 
-var puzzles = JSON.parse(sessionStorage.getItem('puzzles')) || ["bounce", "maze", "memoryclicker", "sudoku", "imagepuzzle", "wordle", "raindrop", "hoop"];
+var puzzles = JSON.parse(sessionStorage.getItem('puzzles')) || ["bounce", "maze", "memoryclicker", "imagepuzzle", "raindrop", "hoop"];
 
 var puzzleScores = JSON.parse(sessionStorage.getItem("puzzleScores")) || {
   "bounce": 0,
@@ -17,7 +17,7 @@ var oldPuzzleScores = null;
 
 var coordination = ['bounce', 'maze', 'hoop']
 var memory = ['memoryclicker', 'imagepuzzle']
-var problemSolving = ['wordle', 'maze', 'sudoku', 'imagepuzzle']
+var problemSolving = ['maze', 'imagepuzzle']
 var reactionTime = ['bounce', 'raindrop', 'hoop', 'memoryclicker']
 
 var coordinationScore = 0;
@@ -28,7 +28,7 @@ var reactionTimeScore = 0;
 function calculateStats(){
   coordinationScore = (puzzleScores[coordination[0]] + puzzleScores[coordination[1]] + puzzleScores[coordination[2]]) / coordination.length;
   memoryScore = (puzzleScores[memory[0]] + puzzleScores[memory[1]]) / memory.length;
-  problemSolvingScore = (puzzleScores[problemSolving[0]] + puzzleScores[problemSolving[1]] + puzzleScores[problemSolving[2]] + puzzleScores[problemSolving[3]]) / problemSolving.length;
+  problemSolvingScore = (puzzleScores[problemSolving[0]] + puzzleScores[problemSolving[1]]) / problemSolving.length;
   reactionTimeScore = (puzzleScores[reactionTime[0]] + puzzleScores[reactionTime[1]] + puzzleScores[reactionTime[2]] + puzzleScores[reactionTime[3]]) / reactionTime.length;
 }
 
