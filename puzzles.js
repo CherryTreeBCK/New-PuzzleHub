@@ -36,6 +36,7 @@ function nextPuzzle() {
   if (puzzles.length === 0) {
     
     window.location.href = "../stats.html";
+    
     return;
   }
 
